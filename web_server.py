@@ -941,15 +941,17 @@ if __name__ == '__main__':
     except Exception:
         local_ip = '127.0.0.1'
 
+    port = int(os.environ.get("PORT", 8000))
     print()
     print("  [Chess Online] Web Server started")
     print("  " + "-" * 46)
-    print(f"  Local   -> http://localhost:8000")
-    print(f"  Network -> http://{local_ip}:8000")
+    print(f"  Port    -> {port}")
+    print(f"  Local   -> http://localhost:{port}")
+    print(f"  Network -> http://{local_ip}:{port}")
     print()
     print("  For internet play (share with anyone):")
-    print("    ngrok http 8000  (then share the https URL)")
+    print(f"    ngrok http {port}  (then share the https URL)")
     print("  " + "-" * 46)
     print()
 
-    uvicorn.run(app, host='0.0.0.0', port=8000, log_level='warning')
+    uvicorn.run(app, host='0.0.0.0', port=port, log_level='info')
