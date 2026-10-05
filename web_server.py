@@ -18,7 +18,8 @@ import sys, os, json, uuid, asyncio, copy
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from board import Board
@@ -28,6 +29,13 @@ from move import Move
 from opening import identify_opening
 
 app   = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 rooms: dict = {}          # room_id -> GameRoom
 
 
@@ -136,6 +144,24 @@ async def game_page(room_id: str):
     # Replace ALL occurrences (title, badge, JS const, WS URL)
     html = GAME_HTML.replace('__ROOM_ID__', room_id)
     return HTMLResponse(html)
+
+@app.post('/api/rooms')
+async def create_room_api():
+    rid = str(uuid.uuid4())[:8]
+    rooms[rid] = GameRoom(rid)
+    return JSONResponse({'room_id': rid, 'state': 'waiting'})
+
+@app.get('/api/rooms/{room_id}')
+async def get_room_api(room_id: str):
+    if room_id not in rooms:
+        return JSONResponse({'error': 'Room not found'}, status_code=404)
+    room = rooms[room_id]
+    return JSONResponse({
+        'room_id': room.room_id,
+        'state': room.game_state,
+        'players_count': len(room.players),
+        'next_player': room.next_player,
+    })
 
 
 # ─────────────────────────────────────────────────────────────────────────────
