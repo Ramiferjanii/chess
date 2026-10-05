@@ -53,8 +53,12 @@ export function useChessSocket(roomId: string) {
     if (typeof window !== "undefined") {
       const isHttps = window.location.protocol === "https:";
       const host = window.location.hostname;
-      // Default to 8000 for backend if running locally
-      const port = host === "localhost" || host === "127.0.0.1" ? ":8000" : "";
+      // If running on localhost or any IP address (e.g. 192.168.x.x, 10.x.x.x, 127.0.0.1), use port 8000
+      const isLocalOrIp =
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+      const port = isLocalOrIp ? ":8000" : "";
       return `${isHttps ? "wss" : "ws"}://${host}${port}/ws/${roomId}`;
     }
     return `ws://localhost:8000/ws/${roomId}`;

@@ -14,7 +14,8 @@ export default function Home() {
   const handleCreateRoom = async () => {
     setIsCreating(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const defaultHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${defaultHost}:8000`;
       const res = await fetch(`${apiUrl}/api/rooms`, {
         method: "POST",
       });
